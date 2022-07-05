@@ -10,13 +10,22 @@ const fetchHolidays = async (countryCode) => {
   return response.json();
 };
 
+const fetchHolidaysByType = async (countryCode) => {
+  const response = await fetch(
+    `https://calendarific.com/api/v2/holidays?&api_key=${apiKey}&country=${countryCode}&year=2020&type=observance`
+  );
+  return response.json();
+};
+
 export default function Gettinginfo() {
   const [inputValue, setInputValue] = useState(null);
   const [countryCode, setCountryCode] = useState("US");
+  const type = "observance";
 
   const { status, data, error, isLoading } = useQuery(
-    ["holidays", countryCode],
-    () => fetchHolidays(countryCode),
+    ["holidays", countryCode, type],
+    () => (type) ? fetchHolidaysByType(countryCode) : fetchHolidays(),
+
     {
       staleTime: Infinity,
     }
@@ -28,6 +37,12 @@ export default function Gettinginfo() {
 
   function handleFindClick() {
     setCountryCode(inputValue);
+    console.log('hello');
+  }
+
+  function handleObservance() {
+    console.log("click");
+    fetchHolidaysByType(countryCode);
   }
 
   const holidays = data && data.response && data.response.holidays;
@@ -45,10 +60,20 @@ export default function Gettinginfo() {
         <button onClick={handleFindClick}>Find holidays</button>
       </div>
       <div>
+        <button onClick={handleObservance}>Observance</button>
+        <button>Local</button>
+        <button>National</button>
+        <button>Religious</button>
+      </div>
+      <div>
         {isLoading ? (
           <p>Loading...</p>
         ) : (
-          holidays?.map((holiday, i) => <div key={i}>{holiday.name}</div>)
+          holidays?.map((holiday, i) => (
+            <div key={i}>
+              {holiday.name}, {holiday.type}
+            </div>
+          ))
         )}
       </div>
     </>
